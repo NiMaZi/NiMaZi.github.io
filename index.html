@@ -17,7 +17,7 @@
 	  var filter_thres = 0.4;
 	  var secs_a_day = 86400;
 	  var max_dtime=0;
-	  var min_trans = 0;
+	  var min_trans = 50;
 	  var min_event = 5;
 	  var color=d3.scale.category10();
 	  var wfp_data=[];
@@ -562,7 +562,7 @@ function getPathPoints(pathstr){
 
 function drawLines(e,p,f,l,mat,min_trans,trans_flow,eve){
 	d3.select("#tt").selectAll("span").remove();
-	d3.select("#xx").selectAll("polygon").remove();
+	d3.select("#xx").selectAll("path").remove();
 	d3.select("svg#flow").remove();
 	var height_with_time=document.documentElement.clientHeight*(4/7);
 	var height=height_with_time-30;
@@ -775,7 +775,7 @@ function drawLines(e,p,f,l,mat,min_trans,trans_flow,eve){
 					 return b.likelyhood-a.likelyhood;
 					 });
 					 $("#txtblock").append("<div id='txt"+d.from+"' style='float:left; position:relative; width:250px; height:120px;'><div id='txtbg"+d.from+"' style='position:absolute; width:250px; height:120px; z-index:1'></div><div id='txtc"+d.from+"' style='position:absolute; width:250px; height:120px; z-index:2; overflow:auto'></div>");
-					 $("#txtc"+d.from).append("<button title='click to remove' id='btn-del"+d.from+"' cur="+d.from+" func='sel'>delete</button>");
+					 $("#txtc"+d.from).append("<button title='click to remove' id='btn-del"+d.from+"' cur="+d.from+" func='sel'>delete</button><button title='click to resort by time' id='btn-sortTime"+d.from+"'>by time</button><button title='click to resort by likelyhood' id='btn-sortLikelyhood"+d.from+"'>by likelyhood</button>");
 					 
   $("#btn-del"+d.from).click(function(){
 	  var cur=$(this).attr("cur");
@@ -794,12 +794,35 @@ function drawLines(e,p,f,l,mat,min_trans,trans_flow,eve){
 		  $("path[sel=0]").attr("opacity",0.7);
 	  }
   });
+  $("#btn-sortTime"+d.from).click(function(){
+	  $(this).parent().children("div").text("");
+	  $(this).parent().children("div").remove();
+	  var cur_cluster=findCluster(d.from_l,d.from);
+	  var tmp3=cur_cluster.content;
+	  tmp3.sort(function(a,b){
+					 return a.words.oTime-b.words.oTime;
+					 });
+					 for(var k=0;k<tmp3.length;k++){
+						 var t=new Date(tmp3[k].words.oTime*1000);
+					 	 $("#txtc"+d.from).append("<div>["+parseFloat(tmp3[k].likelyhood).toFixed(2)+"]("+t.getFullYear()+"-"+(t.getMonth()+1)+"-"+t.getDate()+")<br>"+tmp3[k].words.uname+"----"+tmp3[k].words.texts+"<br><br></div>");
+					 }
+  });
+  $("#btn-sortLikelyhood"+d.from).click(function(){
+	  $(this).parent().children("div").text("");
+	  $(this).parent().children("div").remove();
+	  var cur_cluster=findCluster(d.from_l,d.from);
+	  var tmp4=cur_cluster.content;
+	  tmp4.sort(function(a,b){
+					 return b.likelyhood-a.likelyhood;
+					 });
+					 for(var k=0;k<tmp4.length;k++){
+						 var t=new Date(tmp4[k].words.oTime*1000);
+					 	 $("#txtc"+d.from).append("<div>["+parseFloat(tmp4[k].likelyhood).toFixed(2)+"]("+t.getFullYear()+"-"+(t.getMonth()+1)+"-"+t.getDate()+")<br>"+tmp4[k].words.uname+"----"+tmp4[k].words.texts+"<br><br></div>");
+					 }
+  });
 					 for(var k=0;k<tmp2.length;k++){
-					 	 $("#txtc"+d.from).append("<p>");
-					     $("#txtc"+d.from).append(tmp2[k].words.uname);
-					 	 $("#txtc"+d.from).append("----");
-					 	 $("#txtc"+d.from).append(tmp2[k].words.texts);
-					 	 $("#txtc"+d.from).append("</p>"); 
+						 var t=new Date(tmp2[k].words.oTime*1000);
+					 	 $("#txtc"+d.from).append("<div>["+parseFloat(tmp2[k].likelyhood).toFixed(2)+"]("+t.getFullYear()+"-"+(t.getMonth()+1)+"-"+t.getDate()+")<br>"+tmp2[k].words.uname+"----"+tmp2[k].words.texts+"<br><br></div>");
 					 }
 					 $("#txtbg"+d.from).css("background-color",color((d.from)%10));
 					 $("#txtbg"+d.from).css("opacity",1);
@@ -1171,7 +1194,7 @@ function getWfpData(){
 				  if (words.length!=0)
 				  {
 					  var words_n = norm(words);
-					  var term = {mid:m_id[i],time:days[i],words:words_n,label:[-1],texts:texts[i],uname:users[i]};
+					  var term = {mid:m_id[i],time:days[i],words:words_n,label:[-1],texts:texts[i],uname:users[i],oTime:timestamp[i]};
 					  result.push(term);
 				  }
 			  }
