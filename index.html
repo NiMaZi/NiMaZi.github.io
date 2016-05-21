@@ -1210,11 +1210,9 @@ function getWfpData(){
 
   $(document).ready(function()
   {
-	  route = "3511562331865157.json";
+	  route = "3916244883254191.json";
 	  getRawData(route);
-	  
 	  wfp_data = getWfpData();
-
   cluster_result = HDPcluster(max_dtime,wfp_data);
   matrix_result = transferMatrix(wfp_data);
   layers = matrix_result.length;
